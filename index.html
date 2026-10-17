@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mabel Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Mabel's portfolio. I like Scrabble, physics and teaching.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500&family=Silkscreen:wght@400&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+
+<header class="wrap bar">
+  <span class="label">Portfolio · <span id="year">2026</span></span>
+  <nav class="label" aria-label="Sections">
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1 class="rack" aria-label="Mabel">
+      <span class="tile" aria-hidden="true">M<sub>3</sub></span><span class="tile" aria-hidden="true">A<sub>1</sub></span><span class="tile" aria-hidden="true">B<sub>3</sub></span><span class="tile" aria-hidden="true">E<sub>1</sub></span><span class="tile" aria-hidden="true">L<sub>1</sub></span>
+    </h1>
+    <div class="score label"><span>Score: 9 points</span><span>Drag the tiles</span></div>
+    <div class="intro">
+      <div class="status label"><span class="dot"></span> Move your cursor around</div>
+      <p>Hi, I'm Mabel. I like <em>Scrabble</em>, <em>physics</em> and <em>teaching</em>.</p>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Scrabble</span><span>Physics</span><span>Teaching</span><span>Scrabble</span><span>Physics</span><span>Teaching</span>
+      <span>Scrabble</span><span>Physics</span><span>Teaching</span><span>Scrabble</span><span>Physics</span><span>Teaching</span>
+    </div>
+  </div>
+
+  <section class="scene" aria-label="Things I like">
+    <div class="scene-pin">
+      <div class="scene-bg"></div>
+      <div class="wrap">
+        <span class="label">Things I like</span>
+        <ul class="words">
+          <li>Scrabble<small>QI = 11 pts</small></li>
+          <li>Physics<small>F = ma</small></li>
+          <li>Teaching<small>Ask me why</small></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap work" id="work">
+    <div class="section-head reveal">
+      <h2>Selected work</h2>
+      <span class="label">Projects coming soon</span>
+    </div>
+    <ul class="projects reveal">
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">01</span>
+          <h3>Project one</h3>
+          <p>A placeholder for my first project.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">02</span>
+          <h3>Project two</h3>
+          <p>A placeholder for my second project.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">03</span>
+          <h3>Project three</h3>
+          <p>A placeholder for my third project.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="wrap about" id="about">
+    <span class="label reveal">About</span>
+    <div class="reveal">
+      <p class="big">Hi, I'm Mabel. I like <mark>Scrabble</mark>, <mark>physics</mark> and <mark>teaching</mark>, and I'm using this site to share what I make.</p>
+      <div class="facts">
+        <div><span class="label">Interests</span><ul><li>Scrabble</li><li>Physics</li><li>Teaching</li></ul></div>
+        <div><span class="label">Currently</span><ul><li>Building this site</li></ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="contact" id="contact">
+  <div class="wrap">
+    <span class="label">Contact</span>
+    <p class="say">Say hi <span>†</span></p>
+    <div class="email-row">
+      <span class="email">mothantcinprogs@gmail.com</span>
+      <button class="btn" id="copy-email" type="button">Copy email</button>
+    </div>
+    <div class="links">
+      <a class="btn" href="https://github.com/professionalwaterdrinker" target="_blank" rel="noopener">GitHub ↗</a>
+      <!-- Add when ready:
+      <a class="btn" href="LINKEDIN_URL" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a class="btn" href="INSTAGRAM_URL" target="_blank" rel="noopener">Instagram ↗</a>
+      -->
+    </div>
+    <div class="foot">
+      <span class="label">© Mabel</span>
+      <span class="label">Local time <span id="clock">--:--:--</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="peek" aria-hidden="true"></div>
+<script src="script.js"></script>
+</body>
+</html>
