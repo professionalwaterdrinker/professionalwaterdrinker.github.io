@@ -26,10 +26,12 @@
 
 <main>
   <section class="wrap hero">
-    <h1 class="rack" aria-label="Mabel">
-      <span class="tile" aria-hidden="true">M<sub>3</sub></span><span class="tile" aria-hidden="true">A<sub>1</sub></span><span class="tile" aria-hidden="true">B<sub>3</sub></span><span class="tile" aria-hidden="true">E<sub>1</sub></span><span class="tile" aria-hidden="true">L<sub>1</sub></span>
-    </h1>
-    <div class="score label"><span>Score: 9 points</span><span>Drag the tiles</span></div>
+    <div class="tile-head" data-word="mabel" tabindex="0">
+      <h1 class="rack" aria-label="Mabel">
+        <span class="tile" aria-hidden="true">M<sub>3</sub></span><span class="tile" aria-hidden="true">A<sub>1</sub></span><span class="tile" aria-hidden="true">B<sub>3</sub></span><span class="tile" aria-hidden="true">E<sub>1</sub></span><span class="tile" aria-hidden="true">L<sub>1</sub></span>
+      </h1>
+    </div>
+    <div class="score label"><span>Score: 9 points</span><span>Drag the tiles</span><span>Hover a word for anagrams</span></div>
     <div class="intro">
       <p>Hi, I'm Mabel. I like <em>Scrabble</em>, <em>physics</em> and <em>teaching</em>.</p>
     </div>
@@ -58,7 +60,7 @@
 
   <section class="wrap work" id="work">
     <div class="section-head reveal">
-      <h2>Selected work</h2>
+      <div class="tile-head" data-word="work" tabindex="0"><h2 class="tile-word">Work</h2></div>
       <span class="label">Projects coming soon</span>
     </div>
     <ul class="projects reveal">
@@ -90,7 +92,7 @@
   </section>
 
   <section class="wrap about" id="about">
-    <span class="label reveal">About</span>
+    <div class="reveal"><div class="tile-head" data-word="about" tabindex="0"><h2 class="tile-word">About</h2></div></div>
     <div class="reveal">
       <p class="big">Hi, I'm Mabel. I like <mark>Scrabble</mark>, <mark>physics</mark> and <mark>teaching</mark>, and I'm using this site to share what I make.</p>
       <div class="facts">
@@ -103,7 +105,7 @@
 
 <footer class="contact" id="contact">
   <div class="wrap">
-    <span class="label">Contact</span>
+    <div class="tile-head" data-word="contact" tabindex="0"><h2 class="tile-word">Contact</h2></div>
     <p class="say">Say hi <span>†</span></p>
     <div class="email-row">
       <span class="email">mothantcinprogs@gmail.com</span>

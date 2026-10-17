@@ -116,7 +116,7 @@ function drawGrid() {
 }
 
 /* ---------- Scrabble tiles: drag them, they spring back ---------- */
-const tiles = [...document.querySelectorAll(".tile")].map((el) => ({ el, x: 0, y: 0, vx: 0, vy: 0, drag: null }));
+const tiles = [...document.querySelectorAll(".rack .tile")].map((el) => ({ el, x: 0, y: 0, vx: 0, vy: 0, drag: null }));
 
 tiles.forEach((t) => {
   t.el.addEventListener("pointerdown", (e) => {
@@ -267,3 +267,45 @@ const tick = () => {
 tick();
 setInterval(tick, 1000);
 
+
+/* ---------- Tile headers and their anagram cards ---------- */
+const POINTS = { a:1,b:3,c:3,d:2,e:1,f:4,g:2,h:4,i:1,j:8,k:5,l:1,m:3,n:1,o:1,p:3,q:10,r:1,s:1,t:1,u:1,v:4,w:4,x:8,y:4,z:10 };
+const score = (w) => [...w].reduce((s, ch) => s + (POINTS[ch] || 0), 0);
+// Checked against an English word list. "full" uses every tile; "hidden" uses some of them.
+const ANAGRAMS = {
+  mabel: { full: ["amble", "blame", "melba"], hidden: ["lamb", "meal"] },
+  work: { full: [], hidden: ["row", "wok"] },
+  about: { full: [], hidden: ["boat", "tuba", "bout", "auto", "abut"] },
+  contact: { full: [], hidden: ["octant", "canto", "coact", "taco", "tact"] },
+};
+
+document.querySelectorAll(".tile-word").forEach((h) => {
+  const word = h.textContent.trim();
+  h.setAttribute("aria-label", word);
+  h.innerHTML = [...word.toUpperCase()]
+    .map((ch) => `<span class="tile" aria-hidden="true">${ch}<sub>${POINTS[ch.toLowerCase()]}</sub></span>`)
+    .join("");
+});
+
+document.querySelectorAll(".tile-head").forEach((head) => {
+  const word = head.dataset.word;
+  const data = ANAGRAMS[word];
+  if (!data) return;
+  const list = [
+    ...data.full.map((w) => ({ w, full: true })),
+    ...data.hidden.map((w) => ({ w, full: false })),
+  ].slice(0, 5);
+  const title = data.full.length
+    ? `${data.full.length} anagram${data.full.length > 1 ? "s" : ""} of ${word.toUpperCase()}`
+    : `No full anagrams of ${word.toUpperCase()}`;
+  const note = data.full.length && list.some((x) => !x.full)
+    ? "Red words use every tile. The rest use some of them."
+    : data.full.length ? "" : "These words hide inside it instead.";
+  const card = document.createElement("div");
+  card.className = "anagrams";
+  card.innerHTML =
+    `<span class="label">${title}</span><ol>` +
+    list.map((x) => `<li class="${x.full ? "full" : ""}"><b>${x.w.toUpperCase()}</b><span>${score(x.w)} pts</span></li>`).join("") +
+    `</ol>` + (note ? `<p>${note}</p>` : "");
+  head.appendChild(card);
+});
