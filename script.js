@@ -459,12 +459,91 @@ function applySell(level) {
   }
   sellLevel = level;
 }
+/* ---------- Nervous MABEL: trembles, then shakes and sweats ---------- */
+let nerves = 0;
+const heroHead = document.querySelector(".hero .tile-head");
+const heroTiles = [...document.querySelectorAll(".rack .tile")];
+const sweatBox = document.createElement("div");
+sweatBox.className = "sweat";
+heroHead.appendChild(sweatBox);
+
+// Beads of sweat that appear on the tiles one by one as nerves rise.
+const beads = [];
+heroTiles.forEach((tile, i) => {
+  for (let k = 0; k < 3; k++) {
+    const b = document.createElement("span");
+    b.className = "bead";
+    b.style.left = `${12 + Math.random() * 70}%`;
+    b.style.top = `${8 + Math.random() * 60}%`;
+    tile.appendChild(b);
+    beads.push({ el: b, at: 0.15 + ((i * 3 + k) / 15) * 0.8, rot: 35 + Math.random() * 20 });
+  }
+});
+
+const drops = [];
+function spawnDrop() {
+  const tile = heroTiles[(Math.random() * heroTiles.length) | 0];
+  const hr = heroHead.getBoundingClientRect(), tr = tile.getBoundingClientRect();
+  const el = document.createElement("span");
+  el.className = "drop";
+  const s = 6 + Math.random() * 7 * (0.5 + nerves);
+  el.style.setProperty("--s", `${s}px`);
+  sweatBox.appendChild(el);
+  const side = Math.random() < 0.5 ? -1 : 1;
+  drops.push({
+    el,
+    x: tr.left - hr.left + (side < 0 ? 0 : tr.width) * (Math.random() < 0.6 ? 1 : Math.random()),
+    y: tr.top - hr.top + Math.random() * tr.height * 0.5,
+    vx: side * (0.5 + Math.random() * 3.5 * nerves),
+    vy: -Math.random() * 3 * nerves,
+    life: 90,
+  });
+}
+
+let nervesShown = -1;
+function stepNerves() {
+  const t = nerves;
+  if (t > 0 && !reduced) {
+    const amp = 0.5 + t * t * 7, rot = t * t * 2.5;
+    const r = () => Math.random() * 2 - 1;
+    heroHead.style.transform = `translate(${r() * amp}px, ${r() * amp * 0.6}px) rotate(${r() * rot}deg)`;
+  } else if (heroHead.style.transform) {
+    heroHead.style.transform = "";
+  }
+  if (t !== nervesShown) {
+    beads.forEach((b) => {
+      const on = t >= b.at;
+      b.el.style.opacity = on ? "1" : "0";
+      b.el.style.transform = `rotate(${b.rot}deg) scale(${on ? 0.7 + t * 0.5 : 0.2})`;
+    });
+    nervesShown = t;
+  }
+  if (!reduced && t > 0.35 && Math.random() < (t - 0.35) * 0.7) spawnDrop();
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i];
+    d.vy += 0.3;
+    d.x += d.vx;
+    d.y += d.vy;
+    d.life--;
+    d.el.style.transform = `translate(${d.x}px, ${d.y}px) rotate(45deg)`;
+    d.el.style.opacity = Math.min(1, d.life / 30);
+    if (d.life <= 0) {
+      d.el.remove();
+      drops.splice(i, 1);
+    }
+  }
+  requestAnimationFrame(stepNerves);
+}
+requestAnimationFrame(stepNerves);
+
 // The handle glides freely; the content switches when it passes the halfway point between stops.
 function onSell() {
   const v = Number(sell.value);
   sell.style.setProperty("--fill", `${(v / (HARD_SELL.length - 1)) * 100}%`);
   const level = Math.round(v);
   if (level !== sellLevel) applySell(level);
+  // Over the last stretch (between the last two stops) MABEL gets more and more nervous.
+  nerves = clamp(v - (HARD_SELL.length - 2), 0, 1);
 }
 sell.addEventListener("input", onSell);
 // Arrow keys jump a whole stop at a time.
