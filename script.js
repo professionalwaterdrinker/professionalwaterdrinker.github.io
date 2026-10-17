@@ -435,7 +435,6 @@ function applySell(level) {
   pitch.innerHTML = lvl.pitch;
   sellName.textContent = lvl.name;
   sell.setAttribute("aria-valuetext", lvl.name);
-  sell.style.setProperty("--fill", `${(level / (HARD_SELL.length - 1)) * 100}%`);
   hero.classList.toggle("max", level === HARD_SELL.length - 1);
   // Keep stickers from softer levels, add this level's, drop harder ones.
   const wanted = HARD_SELL.slice(0, level + 1).flatMap((l) => l.stickers);
@@ -460,5 +459,21 @@ function applySell(level) {
   }
   sellLevel = level;
 }
-sell.addEventListener("input", () => applySell(Number(sell.value)));
-applySell(Number(sell.value));
+// The handle glides freely; the content switches when it passes the halfway point between stops.
+function onSell() {
+  const v = Number(sell.value);
+  sell.style.setProperty("--fill", `${(v / (HARD_SELL.length - 1)) * 100}%`);
+  const level = Math.round(v);
+  if (level !== sellLevel) applySell(level);
+}
+sell.addEventListener("input", onSell);
+// Arrow keys jump a whole stop at a time.
+sell.addEventListener("keydown", (e) => {
+  const dir = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+  if (!dir) return;
+  e.preventDefault();
+  sell.value = clamp(Math.round(Number(sell.value)) + dir, 0, HARD_SELL.length - 1);
+  onSell();
+});
+applySell(Math.round(Number(sell.value)));
+onSell();
