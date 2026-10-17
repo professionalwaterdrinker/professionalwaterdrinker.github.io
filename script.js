@@ -430,17 +430,17 @@ const stickerBox = document.getElementById("stickers");
 const hero = document.querySelector(".hero");
 let sellLevel = 0;
 
-function applySell(level) {
-  const lvl = HARD_SELL[level];
-  pitch.innerHTML = lvl.pitch;
-  sellName.textContent = lvl.name;
-  sell.setAttribute("aria-valuetext", lvl.name);
-  hero.classList.toggle("max", level === HARD_SELL.length - 1);
-  // Keep stickers from softer levels, add this level's, drop harder ones.
-  const wanted = HARD_SELL.slice(0, level + 1).flatMap((l) => l.stickers);
-  while (stickerBox.children.length > wanted.length) stickerBox.lastChild.remove();
-  for (let n = stickerBox.children.length; n < wanted.length; n++) {
-    const s = wanted[n], spot = SPOTS[n % SPOTS.length];
+// Each sticker gets its own point on the slider, evenly spaced from start to end
+// (in the order they are listed above), so they pop in one at a time as the handle moves.
+const MAX_SELL = HARD_SELL.length - 1;
+const ALL_STICKERS = HARD_SELL.flatMap((lvl) => lvl.stickers);
+const STICKERS = ALL_STICKERS.map((s, n) => ({ ...s, at: ((n + 1) / (ALL_STICKERS.length + 1)) * MAX_SELL }));
+
+function syncStickers(v) {
+  const wanted = STICKERS.filter((s) => v >= s.at).length;
+  while (stickerBox.children.length > wanted) stickerBox.lastChild.remove();
+  for (let n = stickerBox.children.length; n < wanted; n++) {
+    const s = STICKERS[n], spot = SPOTS[n % SPOTS.length];
     const el = document.createElement("div");
     el.className = `sticker ${s.style}`;
     el.textContent = s.text;
@@ -449,9 +449,16 @@ function applySell(level) {
     el.style.top = `${spot.y}%`;
     el.style.setProperty("--rot", `${spot.r}deg`);
     el.style.fontSize = s.style === "burst" ? "20px" : "22px";
-    el.style.animationDelay = `${(n - stickerBox.children.length) * 0.08}s`;
     stickerBox.appendChild(el);
   }
+}
+
+function applySell(level) {
+  const lvl = HARD_SELL[level];
+  pitch.innerHTML = lvl.pitch;
+  sellName.textContent = lvl.name;
+  sell.setAttribute("aria-valuetext", lvl.name);
+  hero.classList.toggle("max", level === HARD_SELL.length - 1);
   // Selling harder stirs up the fluid behind the page.
   if (level > sellLevel && typeof bursts !== "undefined") {
     const r = sell.getBoundingClientRect();
@@ -647,6 +654,7 @@ function onSell() {
   sell.style.setProperty("--fill", `${(v / (HARD_SELL.length - 1)) * 100}%`);
   const level = Math.round(v);
   if (level !== sellLevel) applySell(level);
+  syncStickers(v);
   // Over the last stretch (between the last two stops) MABEL gets more and more nervous.
   nerves = clamp(v - (HARD_SELL.length - 2), 0, 1);
 }
