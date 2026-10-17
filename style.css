@@ -237,12 +237,10 @@ header, main, footer { position: relative; z-index: 1; }
 .btn:hover { background: var(--ink); color: var(--paper); }
 .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
 
-/* Grungy hero tiles: dirtier wood, stains, scratches, grit and chipped edges */
+/* Hero tiles: clean tiles with a gritty grain and slightly chipped edges; each tile's grain differs */
 .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .rack .tile {
-  background-color: #b5a684;
-  background-image: linear-gradient(165deg, rgba(255,255,255,.07), rgba(0,0,0,.22));
-  color: #17130f;
+  background-image: linear-gradient(165deg, rgba(255,255,255,.12), rgba(0,0,0,.06));
   border-radius: 9% 12% 8% 11% / 11% 8% 12% 9%;
   filter: url(#grit);
   overflow: hidden;
@@ -251,17 +249,18 @@ header, main, footer { position: relative; z-index: 1; }
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.08 0 0 0 0 0.04 3.2 0 0 0 -1.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse 34% 24% at 80% 16%, rgba(55,35,15,.42), transparent 72%),
-    radial-gradient(ellipse 26% 38% at 12% 82%, rgba(40,25,10,.38), transparent 72%),
-    radial-gradient(circle at 58% 64%, rgba(110,30,25,.16), transparent 34%),
-    repeating-linear-gradient(112deg, transparent 0 11px, rgba(35,22,10,.09) 11px 12px),
-    linear-gradient(28deg, transparent 46%, rgba(30,20,10,.25) 47%, transparent 48.5%);
+    repeating-linear-gradient(var(--grain, 96deg), transparent 0 7px, rgba(120,90,50,.07) 7px 8px, transparent 8px 13px);
   mix-blend-mode: multiply;
+  opacity: .75;
 }
+.rack .tile:nth-child(1) { --grain: 92deg; }
+.rack .tile:nth-child(2) { --grain: 98deg; }
+.rack .tile:nth-child(3) { --grain: 86deg; }
+.rack .tile:nth-child(4) { --grain: 101deg; }
+.rack .tile:nth-child(5) { --grain: 89deg; }
 .rack .tile:nth-child(2n)::before { transform: scaleX(-1); }
 .rack .tile:nth-child(3n)::before { transform: scaleY(-1); }
 .rack .tile:nth-child(5)::before { transform: rotate(180deg); }
-.rack .tile sub { opacity: .8; }
 
 /* Section headers as small tile racks, with an anagram card on hover */
 .tile-head { position: relative; display: inline-block; outline-offset: 8px; cursor: help; }
