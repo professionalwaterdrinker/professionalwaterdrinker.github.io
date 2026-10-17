@@ -9,11 +9,13 @@ window.addEventListener("pointermove", (e) => {
 });
 document.addEventListener("pointerleave", () => (pointer.active = false));
 
-/* ---------- Background: a springy grid that bends around the cursor ---------- */
+/* ---------- Background: a small fluid simulation drawn as a contour plot ---------- */
+// Stable-fluids solver (semi-Lagrangian advection + pressure projection) on a coarse grid.
+// The cursor pushes the fluid; the contour lines are level sets of a dye field it carries.
 const canvas = document.getElementById("field");
 const ctx = canvas.getContext("2d");
-const GAP = 44;
-let cols = 0, rows = 0, pts = [], gridColor = "#999", accent = "#22f";
+const CELL = 14;
+let gridColor = "#999", accent = "#c00";
 
 function readColors() {
   const s = getComputedStyle(document.documentElement);
@@ -24,94 +26,190 @@ readColors();
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColors);
 new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
+let NX = 0, NY = 0, u, v, u0, v0, dye, dye0, base, pr, div;
+const IX = (i, j) => i + (NX + 2) * j;
+
 function buildGrid() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  cols = Math.ceil(innerWidth / GAP) + 2;
-  rows = Math.ceil(innerHeight / GAP) + 2;
-  pts = [];
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      const x = (i - 1) * GAP, y = (j - 1) * GAP;
-      pts.push({ ox: x, oy: y, x, y, vx: 0, vy: 0 });
+  NX = Math.ceil(innerWidth / CELL) + 1;
+  NY = Math.ceil(innerHeight / CELL) + 1;
+  const n = (NX + 2) * (NY + 2);
+  [u, v, u0, v0, dye, dye0, base, pr, div] = Array.from({ length: 9 }, () => new Float32Array(n));
+  // A smooth starting landscape so there are contours before anyone moves.
+  for (let j = 0; j < NY + 2; j++) {
+    for (let i = 0; i < NX + 2; i++) {
+      const x = i * CELL, y = j * CELL;
+      base[IX(i, j)] =
+        0.5 +
+        0.22 * Math.sin(x * 0.006 + Math.cos(y * 0.004) * 2) * Math.cos(y * 0.007) +
+        0.14 * Math.sin((x - y) * 0.004 + 1.3);
     }
   }
+  dye.set(base);
 }
 buildGrid();
 window.addEventListener("resize", buildGrid);
 
-// A click sends a ripple through the grid.
-const ripples = [];
-window.addEventListener("pointerdown", (e) => ripples.push({ x: e.clientX, y: e.clientY, r: 0 }));
-
-function stepGrid() {
-  const R = 190;
-  for (const p of pts) {
-    // Cursor pushes points outward, like a ball pressed into a sheet.
-    if (pointer.active) {
-      const dx = p.ox - pointer.x, dy = p.oy - pointer.y;
-      const d = Math.hypot(dx, dy) || 1;
-      if (d < R) {
-        const f = (1 - d / R) ** 2 * 3.2;
-        p.vx += (dx / d) * f;
-        p.vy += (dy / d) * f;
-      }
-    }
-    for (const w of ripples) {
-      const dx = p.ox - w.x, dy = p.oy - w.y;
-      const d = Math.hypot(dx, dy) || 1;
-      const band = Math.abs(d - w.r);
-      if (band < 40) {
-        const f = (1 - band / 40) * 2.4 * Math.max(0, 1 - w.r / 900);
-        p.vx += (dx / d) * f;
-        p.vy += (dy / d) * f;
-      }
-    }
-    // Spring back to rest, with damping.
-    p.vx += (p.ox - p.x) * 0.06;
-    p.vy += (p.oy - p.y) * 0.06;
-    p.vx *= 0.82;
-    p.vy *= 0.82;
-    p.x += p.vx;
-    p.y += p.vy;
+function setBounds(b, x) {
+  for (let i = 1; i <= NX; i++) {
+    x[IX(i, 0)] = b === 2 ? -x[IX(i, 1)] : x[IX(i, 1)];
+    x[IX(i, NY + 1)] = b === 2 ? -x[IX(i, NY)] : x[IX(i, NY)];
   }
-  for (let k = ripples.length - 1; k >= 0; k--) {
-    ripples[k].r += 14;
-    if (ripples[k].r > 900) ripples.splice(k, 1);
+  for (let j = 1; j <= NY; j++) {
+    x[IX(0, j)] = b === 1 ? -x[IX(1, j)] : x[IX(1, j)];
+    x[IX(NX + 1, j)] = b === 1 ? -x[IX(NX, j)] : x[IX(NX, j)];
   }
 }
 
+function advect(b, dst, src, vx, vy) {
+  for (let j = 1; j <= NY; j++) {
+    for (let i = 1; i <= NX; i++) {
+      const k = IX(i, j);
+      const x = clamp(i - vx[k], 0.5, NX + 0.5);
+      const y = clamp(j - vy[k], 0.5, NY + 0.5);
+      const i0 = x | 0, j0 = y | 0, s1 = x - i0, t1 = y - j0, s0 = 1 - s1, t0 = 1 - t1;
+      dst[k] =
+        s0 * (t0 * src[IX(i0, j0)] + t1 * src[IX(i0, j0 + 1)]) +
+        s1 * (t0 * src[IX(i0 + 1, j0)] + t1 * src[IX(i0 + 1, j0 + 1)]);
+    }
+  }
+  setBounds(b, dst);
+}
+
+function project() {
+  for (let j = 1; j <= NY; j++) {
+    for (let i = 1; i <= NX; i++) {
+      div[IX(i, j)] = -0.5 * (u[IX(i + 1, j)] - u[IX(i - 1, j)] + v[IX(i, j + 1)] - v[IX(i, j - 1)]);
+      pr[IX(i, j)] = 0;
+    }
+  }
+  setBounds(0, div);
+  setBounds(0, pr);
+  for (let it = 0; it < 14; it++) {
+    for (let j = 1; j <= NY; j++) {
+      for (let i = 1; i <= NX; i++) {
+        pr[IX(i, j)] = (div[IX(i, j)] + pr[IX(i - 1, j)] + pr[IX(i + 1, j)] + pr[IX(i, j - 1)] + pr[IX(i, j + 1)]) / 4;
+      }
+    }
+    setBounds(0, pr);
+  }
+  for (let j = 1; j <= NY; j++) {
+    for (let i = 1; i <= NX; i++) {
+      u[IX(i, j)] -= 0.5 * (pr[IX(i + 1, j)] - pr[IX(i - 1, j)]);
+      v[IX(i, j)] -= 0.5 * (pr[IX(i, j + 1)] - pr[IX(i, j - 1)]);
+    }
+  }
+  setBounds(1, u);
+  setBounds(2, v);
+}
+
+// Push fluid (and a little dye) in a soft circle around a point given in screen pixels.
+function splat(px, py, fx, fy, amount, radius) {
+  const ci = px / CELL + 1, cj = py / CELL + 1;
+  const r = Math.ceil(radius * 2);
+  for (let j = Math.max(1, (cj - r) | 0); j <= Math.min(NY, (cj + r) | 0); j++) {
+    for (let i = Math.max(1, (ci - r) | 0); i <= Math.min(NX, (ci + r) | 0); i++) {
+      const dx = i - ci, dy = j - cj;
+      const w = Math.exp(-(dx * dx + dy * dy) / (radius * radius));
+      const k = IX(i, j);
+      if (fx === null) {
+        // Radial burst: outward from the centre.
+        const d = Math.hypot(dx, dy) || 1;
+        u[k] += (dx / d) * fy * w;
+        v[k] += (dy / d) * fy * w;
+      } else {
+        u[k] += fx * w;
+        v[k] += fy * w;
+      }
+      dye[k] += amount * w;
+    }
+  }
+}
+
+// A click sends a burst through the fluid.
+const bursts = [];
+window.addEventListener("pointerdown", (e) => bursts.push({ x: e.clientX, y: e.clientY }));
+
+let lastPX = null, lastPY = null, tSim = 0;
+function stepGrid() {
+  tSim++;
+  if (pointer.active && lastPX !== null) {
+    const mx = (pointer.x - lastPX) / CELL, my = (pointer.y - lastPY) / CELL;
+    const sp = Math.hypot(mx, my);
+    if (sp > 0.01) splat(pointer.x, pointer.y, mx * 0.5, my * 0.5, Math.min(sp * 0.02, 0.06), 3.2);
+  }
+  lastPX = pointer.active ? pointer.x : null;
+  lastPY = pointer.active ? pointer.y : null;
+  while (bursts.length) {
+    const b = bursts.pop();
+    splat(b.x, b.y, null, 1.6, 0.18, 5);
+  }
+  // Slow cellular drift so the plot keeps breathing when nobody touches it.
+  for (let j = 1; j <= NY; j++) {
+    for (let i = 1; i <= NX; i++) {
+      const k = IX(i, j);
+      u[k] += 0.0008 * Math.sin(j * 0.12 + tSim * 0.004);
+      v[k] += 0.0008 * Math.cos(i * 0.1 - tSim * 0.003);
+    }
+  }
+  u0.set(u);
+  v0.set(v);
+  advect(1, u, u0, u0, v0);
+  advect(2, v, v0, u0, v0);
+  project();
+  for (let k = 0; k < u.length; k++) {
+    u[k] *= 0.99;
+    v[k] *= 0.99;
+  }
+  dye0.set(dye);
+  advect(0, dye, dye0, u, v);
+  // Let the dye relax back toward the starting landscape over time.
+  for (let k = 0; k < dye.length; k++) dye[k] += (base[k] - dye[k]) * 0.002;
+}
+
+// Marching squares: which cell edges a contour crosses, by corner pattern (TL,TR,BR,BL bits).
+const CASES = [[], [[2, 3]], [[1, 2]], [[1, 3]], [[0, 1]], [[0, 3], [1, 2]], [[0, 2]], [[0, 3]],
+  [[0, 3]], [[0, 2]], [[0, 1], [2, 3]], [[0, 1]], [[1, 3]], [[1, 2]], [[2, 3]], []];
+const LEVELS = [];
+for (let L = 0.16; L < 1.2; L += 0.055) LEVELS.push(L);
+
 function drawGrid() {
   ctx.clearRect(0, 0, innerWidth, innerHeight);
-  ctx.strokeStyle = gridColor;
+  const thin = new Path2D(), bold = new Path2D();
+  const pt = (e, x0, y0, a, b, c, d, L) => {
+    if (e === 0) return [x0 + (CELL * (L - a)) / (b - a), y0];
+    if (e === 1) return [x0 + CELL, y0 + (CELL * (L - b)) / (c - b)];
+    if (e === 2) return [x0 + (CELL * (L - d)) / (c - d), y0 + CELL];
+    return [x0, y0 + (CELL * (L - a)) / (d - a)];
+  };
+  for (let j = 1; j < NY; j++) {
+    for (let i = 1; i < NX; i++) {
+      const a = dye[IX(i, j)], b = dye[IX(i + 1, j)], c = dye[IX(i + 1, j + 1)], d = dye[IX(i, j + 1)];
+      const lo = Math.min(a, b, c, d), hi = Math.max(a, b, c, d);
+      const x0 = (i - 1) * CELL, y0 = (j - 1) * CELL;
+      for (let n = 0; n < LEVELS.length; n++) {
+        const L = LEVELS[n];
+        if (L <= lo || L > hi) continue;
+        const idx = ((a > L) << 3) | ((b > L) << 2) | ((c > L) << 1) | (d > L);
+        const path = n % 5 === 2 ? bold : thin;
+        for (const [e1, e2] of CASES[idx]) {
+          const p1 = pt(e1, x0, y0, a, b, c, d, L), p2 = pt(e2, x0, y0, a, b, c, d, L);
+          path.moveTo(p1[0], p1[1]);
+          path.lineTo(p2[0], p2[1]);
+        }
+      }
+    }
+  }
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      const p = pts[j * cols + i];
-      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-    }
-  }
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      const p = pts[j * cols + i];
-      if (j === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-    }
-  }
-  ctx.stroke();
-  // Light up the points that are moving fastest.
-  ctx.fillStyle = accent;
-  for (const p of pts) {
-    const sp = Math.abs(p.vx) + Math.abs(p.vy);
-    if (sp > 0.6) {
-      ctx.globalAlpha = clamp(sp / 6, 0, 0.9);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
+  ctx.strokeStyle = gridColor;
+  ctx.stroke(thin);
+  ctx.globalAlpha = 0.55;
+  ctx.lineWidth = 1.3;
+  ctx.strokeStyle = accent;
+  ctx.stroke(bold);
   ctx.globalAlpha = 1;
 }
 
