@@ -116,23 +116,6 @@ header, main, footer { position: relative; z-index: 1; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); animation: pulse 2s infinite; }
 @keyframes pulse { 50% { opacity: .25; } }
 
-/* Ticker */
-.ticker {
-  margin-block: 64px 0;
-  border-block: 1px solid var(--ink);
-  overflow: hidden;
-  transform: rotate(-1.5deg);
-  background: var(--blue);
-  color: var(--ink);
-}
-.ticker-track { display: flex; width: max-content; padding-block: 12px; will-change: transform; }
-.ticker span {
-  font-family: var(--display); font-weight: 700;
-  font-size: clamp(28px, 4.5vw, 56px);
-  white-space: nowrap; padding-right: 0.6em;
-}
-.ticker span::after { content: "✺"; padding-left: 0.6em; font-size: 0.6em; vertical-align: middle; }
-
 /* Scroll scene: three interests take over the screen one at a time */
 .scene { height: 300vh; position: relative; }
 .scene-pin {
@@ -229,7 +212,7 @@ header, main, footer { position: relative; z-index: 1; }
 .contact {
   background: var(--deep); color: var(--ink);
   border-top: 1px solid var(--line);
-  padding-block: 72px 32px; margin-top: 40px;
+  padding-block: 72px 80px; margin-top: 40px;
   border-radius: 28px 28px 0 0;
 }
 .contact .label { color: inherit; opacity: .6; }
@@ -250,11 +233,6 @@ header, main, footer { position: relative; z-index: 1; }
 }
 .btn:hover { background: var(--ink); color: var(--paper); }
 .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
-.foot {
-  display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px;
-  margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--line);
-}
-.foot .label { font-variant-numeric: tabular-nums; }
 
 /* Section headers as small tile racks, with an anagram card on hover */
 .tile-head { position: relative; display: inline-block; outline-offset: 8px; cursor: help; }
@@ -346,8 +324,8 @@ header, main, footer { position: relative; z-index: 1; }
   .sticker.burst { width: 110px; height: 110px; padding: 18px; }
 }
 
-/* Darken the red bands toward the bottom */
-.ticker, .scene-bg { background-image: linear-gradient(transparent, rgba(0,0,0,.35)); background-color: var(--blue); }
+/* Darken the red band toward the bottom */
+.scene-bg { background-image: linear-gradient(transparent, rgba(0,0,0,.35)); background-color: var(--blue); }
 
 @media (max-width: 720px) {
   .about { grid-template-columns: 1fr; }

@@ -264,21 +264,6 @@ function stepTiles() {
   }
 }
 
-/* ---------- Ticker: speeds up and flips direction with your scroll ---------- */
-const track = document.querySelector(".ticker-track");
-let tickX = 0, lastScroll = scrollY, boost = 0, dir = -1;
-function stepTicker() {
-  const ds = scrollY - lastScroll;
-  lastScroll = scrollY;
-  if (ds !== 0) dir = ds > 0 ? -1 : 1;
-  boost = boost * 0.9 + Math.abs(ds) * 0.25;
-  tickX += dir * (1 + boost);
-  const half = track.scrollWidth / 2;
-  if (tickX <= -half) tickX += half;
-  if (tickX > 0) tickX -= half;
-  track.style.transform = `translateX(${tickX}px)`;
-}
-
 /* ---------- Scroll scene: blue circle grows, then each interest takes a turn ---------- */
 const scene = document.querySelector(".scene");
 const sceneBg = document.querySelector(".scene-bg");
@@ -326,7 +311,6 @@ function frame() {
   stepGrid();
   drawGrid();
   stepTiles();
-  stepTicker();
   stepScroll();
   requestAnimationFrame(frame);
 }
@@ -357,13 +341,6 @@ copyBtn?.addEventListener("click", async () => {
   setTimeout(() => (copyBtn.textContent = "Copy email"), 2000);
 });
 
-/* ---------- Footer clock and year ---------- */
-const clock = document.getElementById("clock");
-const tick = () => {
-  clock.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-};
-tick();
-setInterval(tick, 1000);
 
 
 /* ---------- Tile headers and their anagram cards ---------- */
