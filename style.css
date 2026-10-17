@@ -61,7 +61,7 @@ header, main, footer { position: relative; z-index: 1; }
 
 /* Top bar */
 .bar {
-  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  display: flex; justify-content: flex-end; align-items: center; gap: 16px;
   padding-block: 18px; flex-wrap: wrap;
 }
 .bar nav { display: flex; gap: 20px; flex-wrap: wrap; }
@@ -105,13 +105,11 @@ header, main, footer { position: relative; z-index: 1; }
 .score { margin-top: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
 
 .intro {
-  display: grid;
-  grid-template-columns: 1fr minmax(0, 560px);
-  gap: 24px 48px;
-  align-items: end;
+  display: flex;
+  justify-content: flex-end;
   margin-top: 40px;
 }
-.intro p { margin: 0; font-size: clamp(20px, 2.3vw, 30px); line-height: 1.25; text-wrap: balance; }
+.intro p { margin: 0; max-width: 560px; font-size: clamp(20px, 2.3vw, 30px); line-height: 1.25; text-wrap: balance; }
 .intro p em { font-style: normal; color: var(--blue); }
 .status { display: flex; align-items: center; gap: 10px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); animation: pulse 2s infinite; }
@@ -252,7 +250,7 @@ header, main, footer { position: relative; z-index: 1; }
 .btn:hover { background: var(--ink); color: var(--paper); }
 .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
 .foot {
-  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px;
   margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--line);
 }
 .foot .label { font-variant-numeric: tabular-nums; }
@@ -261,7 +259,7 @@ header, main, footer { position: relative; z-index: 1; }
 .ticker, .scene-bg { background-image: linear-gradient(transparent, rgba(0,0,0,.35)); background-color: var(--blue); }
 
 @media (max-width: 720px) {
-  .intro, .about { grid-template-columns: 1fr; }
+  .about { grid-template-columns: 1fr; }
   .project > div { grid-template-columns: 36px minmax(0, 1fr) 90px; }
   .project p { grid-column: 2 / 4; grid-row: 2; }
   .peek { display: none; }
