@@ -176,6 +176,10 @@ header, main, footer { position: relative; z-index: 1; }
 }
 .project p { margin: 0; color: var(--muted); }
 .project .yr { text-align: right; }
+.project h3 a { text-decoration: none; }
+.project h3 a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.project .try { color: var(--blue); text-decoration: none; justify-self: end; }
+.project .try:hover { color: var(--ink); }
 .project > div:hover { padding-left: 18px; color: var(--blue); }
 
 .peek {
