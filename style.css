@@ -270,23 +270,23 @@ header, main, footer { position: relative; z-index: 1; }
 .contact .tile-head { margin-bottom: 8px; }
 .anagrams {
   position: absolute; left: 0; top: calc(100% + 12px); z-index: 6;
-  width: max-content; max-width: min(340px, calc(100vw - 32px));
+  width: max-content; max-width: min(270px, calc(100vw - 32px));
   background: var(--deep); color: var(--ink);
-  border: 1px solid var(--line); border-radius: 12px;
-  padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px;
   box-shadow: 0 18px 40px rgba(0,0,0,.5);
   opacity: 0; visibility: hidden; transform: translateY(-6px) rotate(-1deg);
   transition: opacity .2s, transform .3s cubic-bezier(.3,1.6,.5,1), visibility .2s;
   cursor: default;
 }
 .tile-head:hover .anagrams, .tile-head:focus-within .anagrams { opacity: 1; visibility: visible; transform: none; }
-.anagrams .label { display: block; margin-bottom: 8px; }
-.anagrams ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.anagrams li { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; }
-.anagrams li b { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .04em; }
+.anagrams .label { display: block; margin-bottom: 6px; font-size: 9.5px; }
+.anagrams ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.anagrams li { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; }
+.anagrams li b { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .04em; }
 .anagrams li.full b { color: var(--blue); }
-.anagrams li span { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.anagrams p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.anagrams li span { font-family: var(--mono); font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.anagrams p { margin: 8px 0 0; font-size: 11.5px; color: var(--muted); }
 
 /* Hard-sell slider (idea borrowed from getcoleman.com) */
 .sell {
