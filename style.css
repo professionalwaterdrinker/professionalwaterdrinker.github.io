@@ -102,7 +102,6 @@ header, main, footer { position: relative; z-index: 1; }
 .tile:nth-child(5) { animation-delay: .28s; }
 @keyframes drop { from { transform: translateY(-40%) rotate(-10deg); } to { transform: none; } }
 
-.score { margin-top: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
 
 .intro {
   position: relative; z-index: 3;
