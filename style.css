@@ -12,6 +12,8 @@
   --tile: #c4b89b;
   --tile-edge: #5e5444;
   --tile-ink: #120f0f;
+  --sweat: #8fb2c6;
+  --sweat-shine: rgba(236, 244, 248, 0.7);
   --display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
   --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Eurostile", "Eurostile LT Std", "Eurostile Next", "Michroma", "Arial", sans-serif;
@@ -350,16 +352,8 @@ header, main, footer { position: relative; z-index: 1; }
   .sticker.burst { width: 110px; height: 110px; padding: 18px; }
 }
 
-/* Nervous MABEL: sweat drops and beads (driven by the hard-sell slider) */
-.sweat { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
-.drop, .bead {
-  position: absolute; left: 0; top: 0;
-  border-radius: 0 50% 50% 50%;
-  background: radial-gradient(circle at 62% 62%, rgba(255,255,255,.95) 0 14%, #b9dcef 32%, #5d97bb 78%, #3d6f91 100%);
-  box-shadow: 0 1px 2px rgba(0,0,0,.35);
-}
-.drop { width: var(--s, 9px); height: var(--s, 9px); will-change: transform, opacity; }
-.bead { width: 9%; aspect-ratio: 1; transform-origin: 50% 50%; transition: transform .25s ease, opacity .25s ease; opacity: 0; }
+/* Nervous MABEL: sweat is drawn on this canvas (driven by the hard-sell slider) */
+.sweat { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
 
 /* Darken the red band toward the bottom */
 .scene-bg { background-image: linear-gradient(transparent, rgba(0,0,0,.35)); background-color: var(--blue); }

@@ -460,77 +460,182 @@ function applySell(level) {
   sellLevel = level;
 }
 /* ---------- Nervous MABEL: trembles, then shakes and sweats ---------- */
+// Sweat is drawn on its own canvas with flat colours. Beads grow on the tiles, sag under
+// gravity, slide once they are too heavy to stay pinned, neck off the bottom edge and
+// pinch off. Falling drops wobble (decaying shape oscillation) and flatten slightly
+// against the air as they speed up.
 let nerves = 0;
 const heroHead = document.querySelector(".hero .tile-head");
 const heroTiles = [...document.querySelectorAll(".rack .tile")];
-const sweatBox = document.createElement("div");
-sweatBox.className = "sweat";
-heroHead.appendChild(sweatBox);
+const sweatCanvas = document.createElement("canvas");
+sweatCanvas.className = "sweat";
+sweatCanvas.setAttribute("aria-hidden", "true");
+document.body.appendChild(sweatCanvas);
+const sctx = sweatCanvas.getContext("2d");
+let sweatFill = "#8fb2c6", sweatShine = "rgba(255,255,255,.55)";
+function readSweat() {
+  const s = getComputedStyle(document.documentElement);
+  sweatFill = s.getPropertyValue("--sweat").trim() || sweatFill;
+  sweatShine = s.getPropertyValue("--sweat-shine").trim() || sweatShine;
+}
+readSweat();
+function sizeSweat() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  sweatCanvas.width = innerWidth * dpr;
+  sweatCanvas.height = innerHeight * dpr;
+  sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+sizeSweat();
+window.addEventListener("resize", sizeSweat);
 
-// Beads of sweat that appear on the tiles one by one as nerves rise.
+// Beads: positions are in pixels relative to their tile's top-left corner, scaled by tile size.
 const beads = [];
 heroTiles.forEach((tile, i) => {
   for (let k = 0; k < 3; k++) {
-    const b = document.createElement("span");
-    b.className = "bead";
-    b.style.left = `${12 + Math.random() * 70}%`;
-    b.style.top = `${8 + Math.random() * 60}%`;
-    tile.appendChild(b);
-    beads.push({ el: b, at: 0.15 + ((i * 3 + k) / 15) * 0.8, rot: 35 + Math.random() * 20 });
+    const u = 0.14 + Math.random() * 0.72, v0 = 0.1 + Math.random() * 0.45;
+    beads.push({ tile, u, v0, v: v0, r: 0, vy: 0, state: "grow", hang: 0, at: 0.12 + ((i * 3 + k) / 15) * 0.82 });
   }
 });
-
 const drops = [];
-function spawnDrop() {
-  const tile = heroTiles[(Math.random() * heroTiles.length) | 0];
-  const hr = heroHead.getBoundingClientRect(), tr = tile.getBoundingClientRect();
-  const el = document.createElement("span");
-  el.className = "drop";
-  const s = 6 + Math.random() * 7 * (0.5 + nerves);
-  el.style.setProperty("--s", `${s}px`);
-  sweatBox.appendChild(el);
-  const side = Math.random() < 0.5 ? -1 : 1;
-  drops.push({
-    el,
-    x: tr.left - hr.left + (side < 0 ? 0 : tr.width) * (Math.random() < 0.6 ? 1 : Math.random()),
-    y: tr.top - hr.top + Math.random() * tr.height * 0.5,
-    vx: side * (0.5 + Math.random() * 3.5 * nerves),
-    vy: -Math.random() * 3 * nerves,
-    life: 90,
-  });
+
+function addDrop(x, y, vx, vy, r, amp) {
+  drops.push({ x, y, vx, vy, r, amp, age: 0 });
 }
 
-let nervesShown = -1;
+function flingDrop() {
+  const tile = heroTiles[(Math.random() * heroTiles.length) | 0];
+  const tr = tile.getBoundingClientRect();
+  const side = Math.random() < 0.5 ? -1 : 1;
+  const r = tr.width * (0.018 + Math.random() * 0.02 * (0.5 + nerves));
+  addDrop(
+    side < 0 ? tr.left : tr.right,
+    tr.top + tr.height * (0.15 + Math.random() * 0.5),
+    side * (0.8 + Math.random() * 3.5 * nerves),
+    -Math.random() * 3 * nerves,
+    r,
+    0.3
+  );
+}
+
+// A drop stuck to a wall: round bottom, top drawn out into a tail as it sags or slides.
+function wallDrop(x, y, r, tail) {
+  const s = tail / (tail + r);
+  const topY = y - r - tail;
+  sctx.beginPath();
+  sctx.moveTo(x + r, y);
+  sctx.arc(x, y, r, 0, Math.PI);
+  sctx.bezierCurveTo(x - r, y - r * 0.55 - tail * 0.45, x - r * 0.55 * (1 - s), topY, x, topY);
+  sctx.bezierCurveTo(x + r * 0.55 * (1 - s), topY, x + r, y - r * 0.55 - tail * 0.45, x + r, y);
+  sctx.fill();
+}
+
+// A drop hanging from the tile's bottom edge, thinning at the neck before it pinches off.
+function hangingDrop(x, edgeY, r, neckLen, neckW) {
+  const cy = edgeY + neckLen + r;
+  sctx.beginPath();
+  sctx.moveTo(x - neckW, edgeY);
+  sctx.bezierCurveTo(x - neckW, edgeY + neckLen * 0.6, x - r, cy - r * 0.9, x - r, cy);
+  sctx.arc(x, cy, r, Math.PI, 0, true);
+  sctx.bezierCurveTo(x + r, cy - r * 0.9, x + neckW, edgeY + neckLen * 0.6, x + neckW, edgeY);
+  sctx.closePath();
+  sctx.fill();
+  return cy;
+}
+
+function shine(x, y, r) {
+  sctx.fillStyle = sweatShine;
+  sctx.beginPath();
+  sctx.ellipse(x - r * 0.38, y - r * 0.32, r * 0.24, r * 0.15, -0.6, 0, Math.PI * 2);
+  sctx.fill();
+  sctx.fillStyle = sweatFill;
+}
+
+let sweatWasDrawn = false;
 function stepNerves() {
   const t = nerves;
   if (t > 0 && !reduced) {
     const amp = 0.5 + t * t * 7, rot = t * t * 2.5;
-    const r = () => Math.random() * 2 - 1;
-    heroHead.style.transform = `translate(${r() * amp}px, ${r() * amp * 0.6}px) rotate(${r() * rot}deg)`;
+    const rnd = () => Math.random() * 2 - 1;
+    heroHead.style.transform = `translate(${rnd() * amp}px, ${rnd() * amp * 0.6}px) rotate(${rnd() * rot}deg)`;
   } else if (heroHead.style.transform) {
     heroHead.style.transform = "";
   }
-  if (t !== nervesShown) {
-    beads.forEach((b) => {
-      const on = t >= b.at;
-      b.el.style.opacity = on ? "1" : "0";
-      b.el.style.transform = `rotate(${b.rot}deg) scale(${on ? 0.7 + t * 0.5 : 0.2})`;
-    });
-    nervesShown = t;
+
+  const busy = t > 0 || drops.length || beads.some((b) => b.r > 0.2);
+  if (!busy) {
+    if (sweatWasDrawn) sctx.clearRect(0, 0, innerWidth, innerHeight);
+    sweatWasDrawn = false;
+    requestAnimationFrame(stepNerves);
+    return;
   }
-  if (!reduced && t > 0.35 && Math.random() < (t - 0.35) * 0.7) spawnDrop();
+  sweatWasDrawn = true;
+  sctx.clearRect(0, 0, innerWidth, innerHeight);
+  sctx.fillStyle = sweatFill;
+
+  const rects = new Map(heroTiles.map((el) => [el, el.getBoundingClientRect()]));
+  for (const b of beads) {
+    const tr = rects.get(b.tile);
+    const size = tr.width;
+    const rc = size * 0.045; // biggest bead that stays pinned
+    const rTarget = t >= b.at ? size * (0.026 + 0.034 * t) : 0;
+    if (b.state === "grow") {
+      b.r += (rTarget - b.r) * (rTarget > b.r ? 0.03 : 0.08);
+      if (!reduced && b.r > rc) b.state = "slide";
+    }
+    if (b.state === "slide") {
+      b.vy += 0.0009 * (b.r / rc - 0.8); // heavier drops slide faster
+      b.vy *= 0.93; // viscous drag on the surface
+      if (Math.random() < 0.04) b.vy *= 0.3; // stick-slip
+      b.v += b.vy;
+      if (rTarget > 0) b.r += 0.004 * size * 0.05;
+      if (b.v * size + b.r >= size * 0.97) {
+        b.state = "hang";
+        b.hang = 0;
+      }
+    }
+    const x = tr.left + b.u * size;
+    if (b.state === "hang") {
+      b.hang++;
+      const p = Math.min(1, b.hang / 26);
+      const neckLen = b.r * (0.15 + 1.1 * p * p);
+      const neckW = b.r * 0.75 * (1 - p);
+      const cy = hangingDrop(x, tr.bottom - 1, b.r, neckLen, Math.max(neckW, 0.4));
+      shine(x, cy, b.r);
+      if (p >= 1) {
+        addDrop(x, cy, 0, 1, b.r, 0.28); // pinches off and wobbles as it falls
+        Object.assign(b, { state: "grow", r: 0, v: b.v0, vy: 0 });
+      }
+      continue;
+    }
+    if (b.r < 0.3) continue;
+    const y = tr.top + b.v * size;
+    const sag = Math.max(0, b.r - rc * 0.55) * 0.9; // gravity drags the top into a tail
+    const tail = sag + (b.state === "slide" ? Math.min(b.vy * size * 9, b.r * 2.2) : 0);
+    wallDrop(x, y, b.r, tail);
+    shine(x, y, b.r);
+  }
+
+  if (!reduced && t > 0.35 && Math.random() < (t - 0.35) * 0.55) flingDrop();
+
   for (let i = drops.length - 1; i >= 0; i--) {
     const d = drops[i];
+    d.age++;
     d.vy += 0.3;
+    d.vx *= 0.99;
     d.x += d.vx;
     d.y += d.vy;
-    d.life--;
-    d.el.style.transform = `translate(${d.x}px, ${d.y}px) rotate(45deg)`;
-    d.el.style.opacity = Math.min(1, d.life / 30);
-    if (d.life <= 0) {
-      d.el.remove();
-      drops.splice(i, 1);
-    }
+    // Shape oscillation after pinch-off, plus flattening along the direction of motion.
+    const k = d.amp * Math.exp(-d.age / 22) * Math.sin(d.age * 0.55);
+    const speed = Math.hypot(d.vx, d.vy);
+    const f = Math.min(0.16, speed * 0.008);
+    const along = d.r * (1 + k) * (1 - f);
+    const across = d.r * (1 - k * 0.8) * (1 + f * 0.5);
+    const ang = Math.atan2(d.vy, d.vx);
+    sctx.beginPath();
+    sctx.ellipse(d.x, d.y, along, across, ang, 0, Math.PI * 2);
+    sctx.fill();
+    shine(d.x, d.y, Math.min(along, across));
+    if (d.y > innerHeight + 30 || d.age > 240) drops.splice(i, 1);
   }
   requestAnimationFrame(stepNerves);
 }
