@@ -15,6 +15,12 @@
 <body>
 
 <canvas id="field" aria-hidden="true"></canvas>
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="grit" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
 <header class="wrap bar">
   <nav class="label" aria-label="Sections">
