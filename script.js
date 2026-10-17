@@ -407,3 +407,81 @@ document.querySelectorAll(".tile-head").forEach((head) => {
     `</ol>` + (note ? `<p>${note}</p>` : "");
   head.appendChild(card);
 });
+
+/* ---------- Hard-sell slider ---------- */
+// EDIT HERE: one entry per slider stop, from softest to hardest.
+// "pitch" replaces the intro sentence (HTML allowed). "stickers" are added on top of the
+// stickers from the softer levels. style can be "", "tile-style" or "burst".
+// The text below is placeholder copy until Mabel sends the real lines.
+const HARD_SELL = [
+  {
+    name: "No hard sell",
+    pitch: "Hi, I'm Mabel. I like <em>Scrabble</em>, <em>physics</em> and <em>teaching</em>.",
+    stickers: [],
+  },
+  {
+    name: "Gentle nudge",
+    pitch: "Hi, I'm Mabel. I like <em>Scrabble</em>, <em>physics</em> and <em>teaching</em>, and I'm pretty good at all three.",
+    stickers: [{ text: "Scrabble fan", style: "tile-style" }],
+  },
+  {
+    name: "Soft sell",
+    pitch: "Mabel here. Scrabble player, <em>fluid dynamics</em> enthusiast and patient teacher. Worth an email.",
+    stickers: [{ text: "Physics nerd", style: "" }, { text: "QI = 11 pts", style: "tile-style" }],
+  },
+  {
+    name: "Hard sell",
+    pitch: "Mabel. <em>Scrabble shark.</em> <em>Physics brain.</em> A teacher who actually explains things. You should get in touch.",
+    stickers: [{ text: "Great explainer", style: "" }, { text: "Ask me about vortices", style: "tile-style" }],
+  },
+  {
+    name: "Very hard sell",
+    pitch: "<em>MABEL!!!</em> The Scrabble-playing, fluid-simulating, physics-teaching person you've been looking for. <em>Email me right now.</em>",
+    stickers: [{ text: "Book me now!", style: "burst" }, { text: "Limited time only", style: "" }, { text: "100% Mabel", style: "burst" }],
+  },
+];
+// Where stickers land inside the intro section, in order of appearance.
+const SPOTS = [
+  { x: 74, y: 4, r: -8 }, { x: 52, y: 44, r: 6 }, { x: 4, y: 56, r: -5 }, { x: 86, y: 38, r: 9 },
+  { x: 30, y: 2, r: 7 }, { x: 1, y: 2, r: -10 }, { x: 88, y: 0, r: 12 }, { x: 18, y: 36, r: -12 },
+];
+
+const sell = document.getElementById("sell-level");
+const sellName = document.getElementById("sell-name");
+const pitch = document.getElementById("pitch");
+const stickerBox = document.getElementById("stickers");
+const hero = document.querySelector(".hero");
+let sellLevel = 0;
+
+function applySell(level) {
+  const lvl = HARD_SELL[level];
+  pitch.innerHTML = lvl.pitch;
+  sellName.textContent = lvl.name;
+  sell.setAttribute("aria-valuetext", lvl.name);
+  sell.style.setProperty("--fill", `${(level / (HARD_SELL.length - 1)) * 100}%`);
+  hero.classList.toggle("max", level === HARD_SELL.length - 1);
+  // Keep stickers from softer levels, add this level's, drop harder ones.
+  const wanted = HARD_SELL.slice(0, level + 1).flatMap((l) => l.stickers);
+  while (stickerBox.children.length > wanted.length) stickerBox.lastChild.remove();
+  for (let n = stickerBox.children.length; n < wanted.length; n++) {
+    const s = wanted[n], spot = SPOTS[n % SPOTS.length];
+    const el = document.createElement("div");
+    el.className = `sticker ${s.style}`;
+    el.textContent = s.text;
+    if (spot.x > 50) el.style.right = `${100 - spot.x}%`;
+    else el.style.left = `${spot.x}%`;
+    el.style.top = `${spot.y}%`;
+    el.style.setProperty("--rot", `${spot.r}deg`);
+    el.style.fontSize = s.style === "burst" ? "20px" : "22px";
+    el.style.animationDelay = `${(n - stickerBox.children.length) * 0.08}s`;
+    stickerBox.appendChild(el);
+  }
+  // Selling harder stirs up the fluid behind the page.
+  if (level > sellLevel && typeof bursts !== "undefined") {
+    const r = sell.getBoundingClientRect();
+    bursts.push({ x: r.left + (r.width * level) / (HARD_SELL.length - 1), y: r.top + r.height / 2 });
+  }
+  sellLevel = level;
+}
+sell.addEventListener("input", () => applySell(Number(sell.value)));
+applySell(Number(sell.value));

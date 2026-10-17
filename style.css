@@ -69,7 +69,7 @@ header, main, footer { position: relative; z-index: 1; }
 .bar nav a:hover { color: var(--blue); }
 
 /* Hero: the name as Scrabble tiles */
-.hero { padding-block: 5vw 3vw; }
+.hero { padding-block: 5vw 3vw; position: relative; }
 .rack {
   display: flex; gap: clamp(6px, 1.4vw, 20px);
   margin: 0; padding: 0;
@@ -105,6 +105,7 @@ header, main, footer { position: relative; z-index: 1; }
 .score { margin-top: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
 
 .intro {
+  position: relative; z-index: 3;
   display: flex;
   justify-content: flex-end;
   margin-top: 40px;
@@ -280,6 +281,70 @@ header, main, footer { position: relative; z-index: 1; }
 .anagrams li.full b { color: var(--blue); }
 .anagrams li span { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .anagrams p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+
+/* Hard-sell slider (idea borrowed from getcoleman.com) */
+.sell {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center; gap: 10px 18px;
+  margin-top: 48px; padding: 18px 20px;
+  border: 1px solid var(--line); border-radius: 16px;
+  background: color-mix(in srgb, var(--deep) 80%, transparent);
+  position: relative; z-index: 3;
+}
+.sell-now { grid-column: 1 / -1; text-align: center; color: var(--ink); }
+.sell-track { position: relative; }
+.sell-ticks { position: absolute; inset: 50% 14px auto; display: flex; justify-content: space-between; pointer-events: none; transform: translateY(-50%); }
+.sell-ticks span { width: 2px; height: 12px; background: var(--line); }
+#sell-level {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 40px; background: transparent; cursor: pointer; margin: 0;
+  position: relative; z-index: 1;
+}
+#sell-level::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--blue) var(--fill, 0%), var(--line) var(--fill, 0%));
+}
+#sell-level::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+#sell-level::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--blue); }
+#sell-level::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 34px; height: 34px; margin-top: -14px;
+  border-radius: 6px; background: var(--tile); border: none;
+  box-shadow: inset 0 -4px 0 var(--tile-edge), 0 4px 10px rgba(0,0,0,.4);
+}
+#sell-level::-moz-range-thumb {
+  width: 34px; height: 34px; border-radius: 6px; background: var(--tile); border: none;
+  box-shadow: inset 0 -4px 0 var(--tile-edge), 0 4px 10px rgba(0,0,0,.4);
+}
+#sell-level:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: 8px; }
+
+.stickers { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.sticker {
+  position: absolute; display: grid; place-items: center; text-align: center;
+  font-family: var(--display); font-weight: 800; line-height: 1; letter-spacing: -0.01em;
+  padding: 14px 18px; max-width: 220px;
+  background: var(--blue); color: var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  transform: rotate(var(--rot, -8deg));
+  animation: stick .55s cubic-bezier(.3,1.7,.5,1) backwards;
+}
+.sticker.tile-style { background: var(--tile); color: var(--tile-ink); border-radius: 10px; box-shadow: inset 0 -5px 0 var(--tile-edge), 0 10px 24px rgba(0,0,0,.45); }
+.sticker.burst {
+  width: 150px; height: 150px; padding: 26px; border-radius: 0;
+  clip-path: polygon(50% 0, 61% 18%, 82% 8%, 80% 30%, 100% 36%, 86% 52%, 100% 68%, 79% 72%, 82% 94%, 61% 84%, 50% 100%, 39% 84%, 18% 94%, 21% 72%, 0 68%, 14% 52%, 0 36%, 20% 30%, 18% 8%, 39% 18%);
+  box-shadow: none; animation: stick .55s cubic-bezier(.3,1.7,.5,1) backwards, throb 1s ease-in-out infinite .6s;
+}
+@keyframes stick { from { transform: scale(0) rotate(40deg); } }
+@keyframes throb { 50% { transform: rotate(var(--rot, -8deg)) scale(1.08); } }
+.hero.max .tile-head { animation: shake .35s linear infinite; }
+@keyframes shake { 25% { transform: translate(2px, -2px) rotate(.4deg); } 50% { transform: translate(-2px, 1px); } 75% { transform: translate(1px, 2px) rotate(-.4deg); } }
+
+@media (max-width: 720px) {
+  .sell { grid-template-columns: 1fr 1fr; }
+  .sell-track { grid-column: 1 / -1; grid-row: 2; }
+  .sell-max { text-align: right; }
+  .sticker { font-size: 14px !important; max-width: 150px; }
+  .sticker.burst { width: 110px; height: 110px; padding: 18px; }
+}
 
 /* Darken the red bands toward the bottom */
 .ticker, .scene-bg { background-image: linear-gradient(transparent, rgba(0,0,0,.35)); background-color: var(--blue); }

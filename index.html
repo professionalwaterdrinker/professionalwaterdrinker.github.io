@@ -33,7 +33,17 @@
     </div>
     <div class="score label"><span>Score: 9 points</span><span>Drag the tiles</span><span>Hover a word for anagrams</span></div>
     <div class="intro">
-      <p>Hi, I'm Mabel. I like <em>Scrabble</em>, <em>physics</em> and <em>teaching</em>.</p>
+      <p id="pitch" aria-live="polite">Hi, I'm Mabel. I like <em>Scrabble</em>, <em>physics</em> and <em>teaching</em>.</p>
+    </div>
+    <div class="stickers" id="stickers" aria-hidden="true"></div>
+    <div class="sell">
+      <label class="label" for="sell-level">No hard sell</label>
+      <div class="sell-track">
+        <input type="range" id="sell-level" min="0" max="4" step="1" value="0" aria-valuetext="No hard sell">
+        <div class="sell-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <span class="label sell-max">Very hard sell</span>
+      <output class="sell-now label" id="sell-name" for="sell-level">No hard sell</output>
     </div>
   </section>
 
