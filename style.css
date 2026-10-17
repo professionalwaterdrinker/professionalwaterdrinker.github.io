@@ -14,7 +14,7 @@
   --tile-ink: #120f0f;
   --display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
   --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "Silkscreen", "Courier New", ui-monospace, monospace;
+  --mono: "Eurostile", "Eurostile LT Std", "Eurostile Next", "Michroma", "Arial", sans-serif;
   color-scheme: dark;
 }
 
@@ -53,8 +53,8 @@ header, main, footer { position: relative; z-index: 1; }
 }
 .label {
   font-family: var(--mono);
-  font-size: 13px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
