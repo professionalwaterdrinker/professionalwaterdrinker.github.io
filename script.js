@@ -20,7 +20,7 @@ let gridColor = "#999", accent = "#c00";
 function readColors() {
   const s = getComputedStyle(document.documentElement);
   gridColor = s.getPropertyValue("--grid").trim() || gridColor;
-  accent = s.getPropertyValue("--blue").trim() || accent;
+  accent = s.getPropertyValue("--red").trim() || accent;
 }
 readColors();
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColors);
@@ -479,11 +479,12 @@ sweatCanvas.className = "sweat";
 sweatCanvas.setAttribute("aria-hidden", "true");
 document.body.appendChild(sweatCanvas);
 const sctx = sweatCanvas.getContext("2d");
-let sweatFill = "#8fb2c6", sweatShine = "rgba(255,255,255,.55)";
+let sweatFill = "#ffffff", sweatShine = "rgba(0,0,0,0)", sweatInk = "#0b0b0b";
 function readSweat() {
   const s = getComputedStyle(document.documentElement);
   sweatFill = s.getPropertyValue("--sweat").trim() || sweatFill;
   sweatShine = s.getPropertyValue("--sweat-shine").trim() || sweatShine;
+  sweatInk = s.getPropertyValue("--sweat-ink").trim() || sweatInk;
 }
 readSweat();
 function sizeSweat() {
@@ -534,6 +535,7 @@ function wallDrop(x, y, r, tail) {
   sctx.bezierCurveTo(x - r, y - r * 0.55 - tail * 0.45, x - r * 0.55 * (1 - s), topY, x, topY);
   sctx.bezierCurveTo(x + r * 0.55 * (1 - s), topY, x + r, y - r * 0.55 - tail * 0.45, x + r, y);
   sctx.fill();
+  sctx.stroke();
 }
 
 // A drop hanging from the tile's bottom edge, thinning at the neck before it pinches off.
@@ -546,6 +548,7 @@ function hangingDrop(x, edgeY, r, neckLen, neckW) {
   sctx.bezierCurveTo(x + r, cy - r * 0.9, x + neckW, edgeY + neckLen * 0.6, x + neckW, edgeY);
   sctx.closePath();
   sctx.fill();
+  sctx.stroke();
   return cy;
 }
 
@@ -578,6 +581,9 @@ function stepNerves() {
   sweatWasDrawn = true;
   sctx.clearRect(0, 0, innerWidth, innerHeight);
   sctx.fillStyle = sweatFill;
+  sctx.strokeStyle = sweatInk;
+  sctx.lineWidth = 2;
+  sctx.lineJoin = "round";
 
   const rects = new Map(heroTiles.map((el) => [el, el.getBoundingClientRect()]));
   for (const b of beads) {
@@ -641,6 +647,7 @@ function stepNerves() {
     sctx.beginPath();
     sctx.ellipse(d.x, d.y, along, across, ang, 0, Math.PI * 2);
     sctx.fill();
+    sctx.stroke();
     shine(d.x, d.y, Math.min(along, across));
     if (d.y > innerHeight + 30 || d.age > 240) drops.splice(i, 1);
   }
