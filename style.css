@@ -79,18 +79,12 @@ header { z-index: 2; }
 
 /* Hero: the name as inked Scrabble tiles over constructivist rays */
 .hero { padding-block: 4vw 3vw; position: relative; isolation: isolate; overflow-x: clip; }
-.hero::before {
-  /* red sunburst rays radiating from behind the name */
-  content: ""; position: absolute; z-index: -2; pointer-events: none;
-  width: min(1300px, 170vw); aspect-ratio: 1;
+/* Red field lines of an oscillating charge radiate from behind the name (drawn by script.js) */
+.rays {
+  position: absolute; z-index: -2; pointer-events: none;
+  width: min(1300px, 170vw); aspect-ratio: 1; height: auto;
   left: 62%; top: 28%; transform: translate(-50%, -50%);
-  background: repeating-conic-gradient(from 0deg, var(--red) 0 5deg, transparent 5deg 15deg);
-  -webkit-mask: radial-gradient(circle, transparent 0 9%, #000 10% 46%, transparent 62%);
-  mask: radial-gradient(circle, transparent 0 9%, #000 10% 46%, transparent 62%);
-  opacity: .9;
-  animation: rays 90s linear infinite;
 }
-@keyframes rays { to { transform: translate(-50%, -50%) rotate(360deg); } }
 .hero::after {
   /* a thick brush-stroke slash across the name */
   content: ""; position: absolute; z-index: -1; pointer-events: none;
@@ -417,7 +411,7 @@ header { z-index: 2; }
   .words li { -webkit-text-stroke-width: 2px; }
   .words li.on { text-shadow: 6px 6px 0 var(--ink); }
   .intro p { transform: rotate(-1.5deg); }
-  .hero::before { left: 70%; top: 18%; }
+  .rays { left: 70%; top: 18%; }
   .rack .tile { filter: none; }
   .rack .tile::before { background-size: 5px 5px; }
 }
