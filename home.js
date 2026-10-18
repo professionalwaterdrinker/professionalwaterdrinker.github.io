@@ -360,12 +360,12 @@ function drawRays() {
   rctx.fill();
 }
 
-// Animate at 30fps (two sim frames per draw), and only while the hero is on screen.
-let raysOn = true, rayTick = 0;
+// Animate every frame, but only while the hero is on screen.
+let raysOn = true;
 new IntersectionObserver((e) => (raysOn = e[0].isIntersecting)).observe(rays);
 function stepRays() {
-  if (raysOn && (rayTick++ & 1) === 0) {
-    rayFrame += 2;
+  if (raysOn) {
+    rayFrame++;
     drawRays();
   }
   requestAnimationFrame(stepRays);

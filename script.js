@@ -30,7 +30,8 @@ let NX = 0, NY = 0, u, v, u0, v0, dye, dye0, base, pr, div;
 const IX = (i, j) => i + (NX + 2) * j;
 
 function buildGrid() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // Drawn at 1x: the faint background lines look the same and it is far fewer pixels on retina screens.
+  const dpr = 1;
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -83,12 +84,12 @@ function project() {
   for (let j = 1; j <= NY; j++) {
     for (let i = 1; i <= NX; i++) {
       div[IX(i, j)] = -0.5 * (u[IX(i + 1, j)] - u[IX(i - 1, j)] + v[IX(i, j + 1)] - v[IX(i, j - 1)]);
-      pr[IX(i, j)] = 0;
     }
   }
   setBounds(0, div);
   setBounds(0, pr);
-  for (let it = 0; it < 14; it++) {
+  // Pressure carries over from the last frame (warm start), so a few sweeps are enough.
+  for (let it = 0; it < 6; it++) {
     for (let j = 1; j <= NY; j++) {
       for (let i = 1; i <= NX; i++) {
         pr[IX(i, j)] = (div[IX(i, j)] + pr[IX(i - 1, j)] + pr[IX(i + 1, j)] + pr[IX(i, j - 1)] + pr[IX(i, j + 1)]) / 4;
@@ -176,29 +177,45 @@ const CASES = [[], [[2, 3]], [[1, 2]], [[1, 3]], [[0, 1]], [[0, 3], [1, 2]], [[0
 const LEVELS = [];
 for (let L = 0.16; L < 1.2; L += 0.055) LEVELS.push(L);
 
+// Where a contour crosses edge e of a cell (0 top, 1 right, 2 bottom, 3 left).
+function ex(e, x0, y0, a, b, c, d, L) {
+  if (e === 0) return x0 + (CELL * (L - a)) / (b - a);
+  if (e === 1) return x0 + CELL;
+  if (e === 2) return x0 + (CELL * (L - d)) / (c - d);
+  return x0;
+}
+function ey(e, x0, y0, a, b, c, d, L) {
+  if (e === 0) return y0;
+  if (e === 1) return y0 + (CELL * (L - b)) / (c - b);
+  if (e === 2) return y0 + CELL;
+  return y0 + (CELL * (L - a)) / (d - a);
+}
+const L0 = LEVELS[0], LSTEP = 0.055;
 function drawGrid() {
   ctx.clearRect(0, 0, innerWidth, innerHeight);
   const thin = new Path2D(), bold = new Path2D();
-  const pt = (e, x0, y0, a, b, c, d, L) => {
-    if (e === 0) return [x0 + (CELL * (L - a)) / (b - a), y0];
-    if (e === 1) return [x0 + CELL, y0 + (CELL * (L - b)) / (c - b)];
-    if (e === 2) return [x0 + (CELL * (L - d)) / (c - d), y0 + CELL];
-    return [x0, y0 + (CELL * (L - a)) / (d - a)];
-  };
+  const nMax = LEVELS.length - 1;
   for (let j = 1; j < NY; j++) {
     for (let i = 1; i < NX; i++) {
       const a = dye[IX(i, j)], b = dye[IX(i + 1, j)], c = dye[IX(i + 1, j + 1)], d = dye[IX(i, j + 1)];
       const lo = Math.min(a, b, c, d), hi = Math.max(a, b, c, d);
+      // Only the levels between this cell's lowest and highest corner can cross it.
+      let n0 = Math.ceil((lo - L0) / LSTEP - 1e-9), n1 = Math.floor((hi - L0) / LSTEP + 1e-9);
+      n0--; n1++; // slack for rounding; the exact check below filters
+      if (n0 < 0) n0 = 0;
+      if (n1 > nMax) n1 = nMax;
+      if (n0 > n1) continue;
       const x0 = (i - 1) * CELL, y0 = (j - 1) * CELL;
-      for (let n = 0; n < LEVELS.length; n++) {
+      for (let n = n0; n <= n1; n++) {
         const L = LEVELS[n];
         if (L <= lo || L > hi) continue;
         const idx = ((a > L) << 3) | ((b > L) << 2) | ((c > L) << 1) | (d > L);
         const path = n % 5 === 2 ? bold : thin;
-        for (const [e1, e2] of CASES[idx]) {
-          const p1 = pt(e1, x0, y0, a, b, c, d, L), p2 = pt(e2, x0, y0, a, b, c, d, L);
-          path.moveTo(p1[0], p1[1]);
-          path.lineTo(p2[0], p2[1]);
+        const segs = CASES[idx];
+        for (let q = 0; q < segs.length; q++) {
+          const e1 = segs[q][0], e2 = segs[q][1];
+          path.moveTo(ex(e1, x0, y0, a, b, c, d, L), ey(e1, x0, y0, a, b, c, d, L));
+          path.lineTo(ex(e2, x0, y0, a, b, c, d, L), ey(e2, x0, y0, a, b, c, d, L));
         }
       }
     }
@@ -241,7 +258,9 @@ tiles.forEach((t) => {
 });
 
 function stepTiles() {
-  for (const t of tiles) {
+  // Read every position first, then write, so the browser lays out once per frame, not five times.
+  const rects = pointer.active ? tiles.map((t) => t.el.getBoundingClientRect()) : null;
+  tiles.forEach((t, n) => {
     if (!t.drag) {
       t.vx += -t.x * 0.08;
       t.vy += -t.y * 0.08;
@@ -253,7 +272,7 @@ function stepTiles() {
     // Tiles near the cursor lean away a little.
     let lean = 0;
     if (!t.drag && pointer.active) {
-      const r = t.el.getBoundingClientRect();
+      const r = rects[n];
       const dx = pointer.x - (r.left + r.width / 2);
       const dy = pointer.y - (r.top + r.height / 2);
       const d = Math.hypot(dx, dy);
@@ -262,7 +281,7 @@ function stepTiles() {
     const rot = clamp(t.vx * 1.2, -30, 30) + lean;
     const tf = `translate(${t.x.toFixed(1)}px, ${t.y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg)`;
     if (tf !== t.last) t.box.style.transform = t.last = tf; // skip the write when nothing moved
-  }
+  });
 }
 
 /* ---------- Scroll scene: blue circle grows, then each interest takes a turn ---------- */
@@ -271,8 +290,12 @@ const sceneBg = document.querySelector(".scene-bg");
 const words = [...document.querySelectorAll(".words li")];
 const rack = document.querySelector(".rack");
 
+let lastScrollKey = "";
 function stepScroll() {
   if (!scene) return;
+  const key = scrollY + "|" + innerHeight;
+  if (key === lastScrollKey) return;
+  lastScrollKey = key;
   const r = scene.getBoundingClientRect();
   const total = r.height - innerHeight;
   const p = clamp(-r.top / total, 0, 1);
