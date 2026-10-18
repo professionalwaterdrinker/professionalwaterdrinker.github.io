@@ -77,6 +77,41 @@ header { z-index: 2; }
 }
 .bar nav a:hover { background: var(--red); }
 
+.bar nav a[aria-current="page"] { background: var(--red); }
+
+/* Landing page: two doors out to the other pages */
+.doors {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px;
+  padding-block: 72px 96px;
+}
+.door {
+  position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  min-height: clamp(160px, 22vw, 280px); padding: 22px 26px;
+  background: var(--ink); color: var(--paper); text-decoration: none;
+  border: 4px solid var(--ink);
+  transform: rotate(-1.5deg);
+  transition: transform .18s, box-shadow .18s;
+}
+.door.red { background: var(--red); transform: rotate(1.5deg); }
+.doors > .door { box-shadow: 10px 10px 0 var(--red); }
+.doors > .door.red { box-shadow: 10px 10px 0 var(--ink); }
+.door .label { position: absolute; top: 18px; left: 26px; color: inherit; }
+.door b {
+  font-family: var(--display); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(44px, 7.5vw, 120px); line-height: .85; letter-spacing: .01em;
+}
+.door i { font-style: normal; font-family: var(--display); font-size: clamp(40px, 6vw, 96px); line-height: .85; transition: transform .18s; }
+.door:hover, .door:focus-visible { transform: rotate(0) translate(-4px, -4px); }
+.door:hover i, .door:focus-visible i { transform: translateX(10px); }
+.door:focus-visible { outline: 4px solid var(--ink); outline-offset: 6px; }
+
+/* Projects and contact pages */
+.page-sub { min-height: 100vh; display: flex; flex-direction: column; }
+.page-sub main { flex: 1 0 auto; }
+.page-sub > .wrap { width: 100%; }
+.page-sub .work { padding-top: 40px; }
+.page-sub .contact { flex: 1 0 auto; }
+
 /* Hero: the name as inked Scrabble tiles over constructivist rays */
 .hero { padding-block: 4vw 3vw; position: relative; isolation: isolate; overflow-x: clip; }
 /* Red field lines of an oscillating charge radiate from behind the name (drawn by script.js) */
@@ -399,6 +434,7 @@ header { z-index: 2; }
 .sweat { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
 
 @media (max-width: 720px) {
+  .doors { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block: 48px 72px; }
   .sell { grid-template-columns: 1fr 1fr; }
   .sell-track { grid-column: 1 / -1; grid-row: 2; }
   .sell-max { text-align: right; }

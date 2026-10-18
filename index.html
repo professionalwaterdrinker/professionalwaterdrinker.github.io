@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="style.css">
 <script>document.documentElement.classList.add("js");</script>
 </head>
-<body>
+<body class="page-home">
 
 <canvas id="field" aria-hidden="true"></canvas>
 <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
@@ -27,10 +27,9 @@
 </svg>
 
 <header class="wrap bar">
-  <nav class="label" aria-label="Sections">
-    <a href="#work">Work</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
+  <nav class="label" aria-label="Pages">
+    <a href="work.html">Projects</a>
+    <a href="contact.html">Contact</a>
   </nav>
 </header>
 
@@ -71,70 +70,14 @@
     </div>
   </section>
 
-  <section class="wrap work" id="work">
-    <div class="section-head reveal">
-      <div class="tile-head" data-word="work" tabindex="0"><h2 class="tile-word">Work</h2></div>
-      <span class="label">More projects coming soon</span>
-    </div>
-    <ul class="projects reveal">
-      <li class="project">
-        <div data-mark="M">
-          <span class="label">01</span>
-          <h3><a href="https://professionalwaterdrinker.github.io/scrabble-recon/" target="_blank" rel="noopener">Mabble</a></h3>
-          <p>Mabble is a little web app I built for Scrabble nerds (me included). Snap a photo of a finished board and it works out how the game could have gone, move by move: who played what, the scores, and even a best guess at each player’s rack. It hooks into Quackle, an open-source Scrabble engine, so you can see which plays were the strongest and how far off yours were. There’s also a practice mode where you play against yourself and get your moves reviewed as you go. It runs entirely in the browser, it’s free, and you can use your own word list, like CSW24 if that's what you want to play with.</p>
-          <a class="yr label try" href="https://professionalwaterdrinker.github.io/scrabble-recon/" target="_blank" rel="noopener">Try it ↗</a>
-        </div>
-      </li>
-      <li class="project">
-        <div data-mark="?">
-          <span class="label">02</span>
-          <h3>Project two</h3>
-          <p>A placeholder for my second project.</p>
-          <span class="yr label">Coming soon</span>
-        </div>
-      </li>
-      <li class="project">
-        <div data-mark="?">
-          <span class="label">03</span>
-          <h3>Project three</h3>
-          <p>A placeholder for my third project.</p>
-          <span class="yr label">Coming soon</span>
-        </div>
-      </li>
-    </ul>
-  </section>
-
-  <section class="wrap about" id="about">
-    <div class="reveal"><div class="tile-head" data-word="about" tabindex="0"><h2 class="tile-word">About</h2></div></div>
-    <div class="reveal">
-      <p class="big">Hi, I'm Mabel. I like <mark>Scrabble</mark>, <mark>physics</mark> and <mark>teaching</mark>, and I'm using this site to share what I make.</p>
-      <div class="facts">
-        <div><span class="label">Interests</span><ul><li>Scrabble</li><li>Physics</li><li>Teaching</li></ul></div>
-        <div><span class="label">Currently</span><ul><li>Building this site</li></ul></div>
-      </div>
-    </div>
+  <section class="wrap doors" aria-label="More">
+    <a class="door" href="work.html"><span class="label">01</span><b>Projects</b><i aria-hidden="true">→</i></a>
+    <a class="door red" href="contact.html"><span class="label">02</span><b>Contact</b><i aria-hidden="true">→</i></a>
   </section>
 </main>
 
-<footer class="contact" id="contact">
-  <div class="wrap">
-    <div class="tile-head" data-word="contact" tabindex="0"><h2 class="tile-word">Contact</h2></div>
-    <p class="say">Say hi<span>!</span></p>
-    <div class="email-row">
-      <span class="email">mothantcinprogs@gmail.com</span>
-      <button class="btn" id="copy-email" type="button">Copy email</button>
-    </div>
-    <div class="links">
-      <a class="btn" href="https://github.com/professionalwaterdrinker" target="_blank" rel="noopener">GitHub ↗</a>
-      <!-- Add when ready:
-      <a class="btn" href="LINKEDIN_URL" target="_blank" rel="noopener">LinkedIn ↗</a>
-      <a class="btn" href="INSTAGRAM_URL" target="_blank" rel="noopener">Instagram ↗</a>
-      -->
-    </div>
-  </div>
-</footer>
-
 <div class="peek" aria-hidden="true"></div>
 <script src="script.js"></script>
+<script src="home.js"></script>
 </body>
 </html>
