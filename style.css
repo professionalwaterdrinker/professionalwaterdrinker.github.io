@@ -110,6 +110,17 @@ header { z-index: 2; }
 .page-sub main { flex: 1 0 auto; }
 .page-sub > .wrap { width: 100%; }
 .page-sub .work { padding-top: 40px; }
+
+/* Interest pages (Scrabble, Physics, Teaching) */
+.topic .section-head .tile-word { font-size: inherit; }
+.topic-intro {
+  font-family: var(--body); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(22px, 2.8vw, 38px); line-height: 1.1; max-width: 28ch;
+  margin: 8px 0 56px; text-wrap: balance;
+}
+.sub-head { margin-top: 48px; }
+.sub-head h2.label { margin: 0; font-size: 13px; }
+.topic + .doors { padding-top: 24px; }
 .page-sub .contact { flex: 1 0 auto; }
 
 /* Hero: the name as inked Scrabble tiles over constructivist rays */
@@ -240,6 +251,13 @@ header { z-index: 2; }
   opacity: 0; transition: opacity .3s;
 }
 .words li.on small { opacity: 1; }
+.words a { color: inherit; text-decoration: none; }
+.words a::after { content: " →"; font-size: .4em; vertical-align: middle; -webkit-text-stroke: 0; text-shadow: none; color: var(--paper); opacity: 0; transition: opacity .2s; }
+.words li:hover, .words li:focus-within {
+  color: var(--paper); text-shadow: 10px 10px 0 var(--ink); transform: translateX(3vw) skewX(-8deg);
+}
+.words li:hover a::after, .words li:focus-within a::after, .words li.on a::after { opacity: 1; }
+.words a:focus-visible { outline: 4px solid var(--ink); outline-offset: 6px; }
 
 /* Scroll reveal. Content is visible without JS; with JS it slides up into place. */
 .js .reveal { transform: translateY(70px) rotate(1.5deg); transition: transform 0.9s cubic-bezier(.2,.9,.2,1); }

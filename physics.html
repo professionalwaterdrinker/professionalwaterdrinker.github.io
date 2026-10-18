@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Physics · Mabel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Mabel's portfolio. Physics: experience and projects.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;700;800&family=Archivo+Black&family=Bangers&family=Michroma&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body class="page-sub">
+
+<canvas id="field" aria-hidden="true"></canvas>
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="grit" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="ink" x="-10%" y="-30%" width="120%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.35" numOctaves="3" seed="11" result="streak"/>
+    <feDisplacementMap in="SourceGraphic" in2="streak" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<header class="wrap bar">
+  <nav class="label" aria-label="Pages">
+    <a href="index.html">Home</a>
+    <a href="work.html">Projects</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main>
+  <section class="wrap work topic">
+    <div class="section-head">
+      <div class="tile-head" data-word="physics" tabindex="0"><h1 class="tile-word">Physics</h1></div>
+      <span class="label">Things I like · 02</span>
+    </div>
+    <p class="topic-intro">Fluid dynamics, simulations and asking why things move the way they do.</p>
+
+    <div class="section-head sub-head"><h2 class="label">Experience</h2></div>
+    <ul class="projects">
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">01</span>
+          <h3>Experience one</h3>
+          <p>A placeholder for an experience.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">02</span>
+          <h3>Experience two</h3>
+          <p>A placeholder for an experience.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="section-head sub-head"><h2 class="label">Projects</h2></div>
+    <ul class="projects">
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">01</span>
+          <h3>Project one</h3>
+          <p>A placeholder for a project.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+      <li class="project">
+        <div data-mark="?">
+          <span class="label">02</span>
+          <h3>Project two</h3>
+          <p>A placeholder for a project.</p>
+          <span class="yr label">Coming soon</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+  <section class="wrap doors" aria-label="Other interests">
+    <a class="door" href="scrabble.html"><span class="label">Also</span><b>Scrabble</b><i aria-hidden="true">→</i></a>
+    <a class="door red" href="teaching.html"><span class="label">Also</span><b>Teaching</b><i aria-hidden="true">→</i></a>
+  </section>
+</main>
+
+<div class="peek" aria-hidden="true"></div>
+<script src="script.js"></script>
+</body>
+</html>

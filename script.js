@@ -353,6 +353,9 @@ const ANAGRAMS = {
   work: { full: [], hidden: ["row", "wok"] },
   about: { full: [], hidden: ["boat", "tuba", "bout", "auto", "abut"] },
   contact: { full: [], hidden: ["octant", "canto", "coact", "taco", "tact"] },
+  scrabble: { full: ["clabbers"], hidden: ["rabble", "cables", "brace", "blabs"] },
+  physics: { full: [], hidden: ["physic", "psych", "chips", "spicy", "ship"] },
+  teaching: { full: ["cheating"], hidden: ["heating", "etching", "chant", "giant"] },
 };
 
 document.querySelectorAll(".tile-word").forEach((h) => {
