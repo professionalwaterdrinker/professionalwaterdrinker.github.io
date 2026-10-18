@@ -300,22 +300,24 @@ const rays = document.getElementById("rays");
 const rctx = rays.getContext("2d");
 let raySize = 0, rayRed = "#c4121a";
 function sizeRays() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  // Drawn at 1x even on retina screens: the shapes are big and flat, so it looks the same
+  // and costs a fraction of the pixels.
   raySize = rays.getBoundingClientRect().width;
-  rays.width = raySize * dpr;
-  rays.height = raySize * dpr;
-  rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  rays.width = raySize;
+  rays.height = raySize;
   rayRed = getComputedStyle(document.documentElement).getPropertyValue("--red").trim() || rayRed;
 }
 sizeRays();
-window.addEventListener("resize", sizeRays);
+window.addEventListener("resize", () => { sizeRays(); drawRays(); });
 
 const RAY_COUNT = 24, RAY_HALF = (2.5 * Math.PI) / 180, KINK = 0.13, AXIS = -Math.PI / 2;
-const EMIT_EVERY = 70; // frames between shells
+const EMIT_EVERY = 70; // frames between shells (at 60fps)
+const RAY_STEPS = 90;
 let rayFrame = 0;
 
 function drawRays() {
   const S = raySize, c = S / 2;
+  if (!S) return;
   const rIn = S * 0.06, rOut = S * 0.45;
   const speed = (rOut - rIn) / (EMIT_EVERY * 6);
   const thick = S * 0.022;
@@ -331,50 +333,46 @@ function drawRays() {
   const spin = (rayFrame / (90 * 60)) * Math.PI * 2;
   rctx.clearRect(0, 0, S, S);
   rctx.fillStyle = rayRed;
-  const steps = 160;
+  // The kink offset depends only on radius (times each ray's own strength), so work it out once.
+  const prof = new Float32Array(RAY_STEPS + 1), rad = new Float32Array(RAY_STEPS + 1);
+  for (let q = 0; q <= RAY_STEPS; q++) {
+    const r = rIn + ((rOut - rIn) * q) / RAY_STEPS;
+    let off = 0;
+    for (const sh of shells) if (r < sh.r) off += sh.s * Math.min(1, (sh.r - r) / thick) * 0.5;
+    prof[q] = off;
+    rad[q] = r;
+  }
+  rctx.beginPath();
   for (let i = 0; i < RAY_COUNT; i++) {
     const th0 = (i / RAY_COUNT) * Math.PI * 2;
     const bend = KINK * Math.sin(th0 - AXIS); // transverse kick ∝ sinθ
-    const left = [], right = [];
-    for (let q = 0; q <= steps; q++) {
-      const r = rIn + ((rOut - rIn) * q) / steps;
-      let off = 0;
-      for (const sh of shells) {
-        if (r < sh.r) off += sh.s * bend * Math.min(1, (sh.r - r) / thick) * 0.5;
-      }
-      const th = th0 + spin + off;
-      left.push([c + r * Math.cos(th - RAY_HALF), c + r * Math.sin(th - RAY_HALF)]);
-      right.push([c + r * Math.cos(th + RAY_HALF), c + r * Math.sin(th + RAY_HALF)]);
+    for (let q = 0; q <= RAY_STEPS; q++) {
+      const th = th0 + spin + bend * prof[q] - RAY_HALF;
+      const x = c + rad[q] * Math.cos(th), y = c + rad[q] * Math.sin(th);
+      q ? rctx.lineTo(x, y) : rctx.moveTo(x, y);
     }
-    rctx.beginPath();
-    rctx.moveTo(left[0][0], left[0][1]);
-    for (const p of left) rctx.lineTo(p[0], p[1]);
-    for (let q = right.length - 1; q >= 0; q--) rctx.lineTo(right[q][0], right[q][1]);
+    for (let q = RAY_STEPS; q >= 0; q--) {
+      const th = th0 + spin + bend * prof[q] + RAY_HALF;
+      rctx.lineTo(c + rad[q] * Math.cos(th), c + rad[q] * Math.sin(th));
+    }
     rctx.closePath();
-    rctx.fill();
   }
-  // Fade in near the centre and out at the edge.
-  rctx.globalCompositeOperation = "destination-in";
-  const g = rctx.createRadialGradient(c, c, 0, c, c, S * 0.44);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(0.16, "rgba(0,0,0,0)");
-  g.addColorStop(0.2, "rgba(0,0,0,0.9)");
-  g.addColorStop(0.72, "rgba(0,0,0,0.9)");
-  g.addColorStop(1, "rgba(0,0,0,0)");
-  rctx.fillStyle = g;
-  rctx.fillRect(0, 0, S, S);
-  rctx.globalCompositeOperation = "source-over";
+  rctx.fill();
 }
 
+// Animate at 30fps (two sim frames per draw), and only while the hero is on screen.
+let raysOn = true, rayTick = 0;
+new IntersectionObserver((e) => (raysOn = e[0].isIntersecting)).observe(rays);
 function stepRays() {
-  rayFrame++;
-  drawRays();
+  if (raysOn && (rayTick++ & 1) === 0) {
+    rayFrame += 2;
+    drawRays();
+  }
   requestAnimationFrame(stepRays);
 }
 if (reduced) {
   rayFrame = 40;
   drawRays();
-  window.addEventListener("resize", drawRays);
 } else {
   requestAnimationFrame(stepRays);
 }

@@ -36,7 +36,7 @@ body {
 /* Printed-paper grain over the whole page */
 body::after {
   content: ""; position: fixed; inset: 0; z-index: 4; pointer-events: none;
-  opacity: .1; mix-blend-mode: multiply;
+  opacity: .08;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 a { color: inherit; }
@@ -130,6 +130,9 @@ header { z-index: 2; }
   position: absolute; z-index: -2; pointer-events: none;
   width: min(1300px, 170vw); aspect-ratio: 1; height: auto;
   left: 62%; top: 28%; transform: translate(-50%, -50%);
+  /* Fade in near the centre and out at the edge (done by the compositor, not per frame). */
+  --fade: radial-gradient(circle closest-side, transparent 14%, rgba(0,0,0,.9) 17.6%, rgba(0,0,0,.9) 63.4%, transparent 88%);
+  -webkit-mask-image: var(--fade); mask-image: var(--fade);
 }
 .hero::after {
   /* a thick brush-stroke slash across the name */
@@ -177,6 +180,10 @@ header { z-index: 2; }
 /* Hero tiles: inked edges, and comic halftone shading that sits differently on each tile */
 .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .rack .tile { filter: url(#grit); overflow: hidden; }
+/* Each hero tile moves inside its own slot, so the gritty filter is drawn once and then just slid around. */
+.rack .slot { display: block; flex: none; position: relative; will-change: transform; }
+.rack .slot.dragging { z-index: 3; }
+.rack .slot.dragging .tile { cursor: grabbing; }
 .rack .tile::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background-image: radial-gradient(circle, var(--ink) 0 34%, transparent 36%);
@@ -185,11 +192,11 @@ header { z-index: 2; }
   mask: linear-gradient(var(--shade, 135deg), transparent 52%, #000 100%);
   opacity: .32;
 }
-.rack .tile:nth-child(1) { --shade: 140deg; }
-.rack .tile:nth-child(2) { --shade: 160deg; }
-.rack .tile:nth-child(3) { --shade: 125deg; }
-.rack .tile:nth-child(4) { --shade: 175deg; }
-.rack .tile:nth-child(5) { --shade: 110deg; }
+.rack .slot:nth-child(1) .tile { --shade: 140deg; }
+.rack .slot:nth-child(2) .tile { --shade: 160deg; animation-delay: .07s; }
+.rack .slot:nth-child(3) .tile { --shade: 125deg; animation-delay: .14s; }
+.rack .slot:nth-child(4) .tile { --shade: 175deg; animation-delay: .21s; }
+.rack .slot:nth-child(5) .tile { --shade: 110deg; animation-delay: .28s; }
 
 /* The pitch: a black propaganda banner */
 .intro {

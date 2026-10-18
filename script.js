@@ -214,14 +214,14 @@ function drawGrid() {
 }
 
 /* ---------- Scrabble tiles: drag them, they spring back ---------- */
-const tiles = [...document.querySelectorAll(".rack .tile")].map((el) => ({ el, x: 0, y: 0, vx: 0, vy: 0, drag: null }));
+const tiles = [...document.querySelectorAll(".rack .tile")].map((el) => ({ el, box: el.parentElement.classList.contains("slot") ? el.parentElement : el, x: 0, y: 0, vx: 0, vy: 0, drag: null, last: "" }));
 
 tiles.forEach((t) => {
   t.el.addEventListener("pointerdown", (e) => {
     e.stopPropagation();
     t.el.setPointerCapture(e.pointerId);
     t.drag = { sx: e.clientX - t.x, sy: e.clientY - t.y, lx: e.clientX, ly: e.clientY };
-    t.el.classList.add("dragging");
+    t.box.classList.add("dragging");
   });
   t.el.addEventListener("pointermove", (e) => {
     if (!t.drag) return;
@@ -234,7 +234,7 @@ tiles.forEach((t) => {
   });
   const drop = () => {
     t.drag = null;
-    t.el.classList.remove("dragging");
+    t.box.classList.remove("dragging");
   };
   t.el.addEventListener("pointerup", drop);
   t.el.addEventListener("pointercancel", drop);
@@ -260,7 +260,8 @@ function stepTiles() {
       lean = d < 300 ? (-dx / 300) * (1 - d / 300) * 14 : 0;
     }
     const rot = clamp(t.vx * 1.2, -30, 30) + lean;
-    t.el.style.transform = `translate(${t.x}px, ${t.y}px) rotate(${rot}deg)`;
+    const tf = `translate(${t.x.toFixed(1)}px, ${t.y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg)`;
+    if (tf !== t.last) t.box.style.transform = t.last = tf; // skip the write when nothing moved
   }
 }
 
